@@ -1,0 +1,13 @@
+<div class="fixed inset-0 bg-black z-40 flex flex-col items-center justify-center animate-fade-in">
+  <div class="relative w-full max-w-md mx-auto aspect-square bg-gray-800 rounded-lg overflow-hidden shadow-lg border-2 border-teal-400">
+    <video #video class="w-full h-full object-cover"></video>
+    <canvas #canvas hidden></canvas>
+    <div class="scanner-box"></div>
+    <div class="absolute top-4 left-4 right-4 text-center bg-black/50 p-2 rounded-md">
+      <p class="text-white font-semibold">Alinhe o QR Code na área demarcada.</p>
+    </div>
+  </div>
+  <button (click)="cancel()" class="mt-8 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition duration-300">
+    Cancelar
+  </button>
+</div>

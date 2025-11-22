@@ -1,0 +1,96 @@
+<div class="space-y-8 animate-fade-in">
+  <header class="text-center">
+    <h1 class="text-4xl font-bold text-teal-400">Nota Fiscal Fácil</h1>
+    <p class="text-gray-400 mt-2">Sua central de inteligência para economizar.</p>
+  </header>
+
+  @if (receiptService.isLoading()) {
+    <!-- SKELETON LOADER -->
+    <div class="space-y-8">
+      <!-- KPI Cards Skeleton -->
+      <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        @for (_ of [1,2,3]; track $index) {
+          <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 animate-pulse">
+            <div class="h-4 bg-gray-700 rounded w-1/3 mx-auto"></div>
+            <div class="h-8 bg-gray-700 rounded w-1/2 mx-auto mt-3"></div>
+          </div>
+        }
+      </section>
+      <!-- Charts Skeleton -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 animate-pulse">
+          <div class="h-6 bg-gray-700 rounded w-3/4 mb-4"></div>
+          <div class="h-64 bg-gray-700 rounded"></div>
+        </div>
+        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 animate-pulse">
+          <div class="h-6 bg-gray-700 rounded w-3/4 mb-4"></div>
+          <div class="h-64 bg-gray-700 rounded"></div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <!-- ACTUAL CONTENT -->
+    <!-- AI Assistant Call to Action -->
+    <section class="bg-gradient-to-br from-teal-500 to-cyan-600 p-6 rounded-lg border border-teal-400 text-center text-white">
+      <h3 class="text-2xl font-bold">Explore seus Dados com IA</h3>
+      <p class="mt-2 opacity-90">Faça perguntas em linguagem natural e descubra insights sobre seus gastos na nova tela de Relatórios.</p>
+      <button (click)="onShowReports()" class="mt-4 bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+        Acessar Relatórios e Assistente IA
+      </button>
+    </section>
+
+    <!-- KPI Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 text-center">
+        <h3 class="text-gray-400 text-sm font-medium">Total Gasto</h3>
+        <p class="text-2xl font-bold text-teal-400 mt-2">R$ {{ analyticsService.totalSpent().toFixed(2) }}</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 text-center">
+        <h3 class="text-gray-400 text-sm font-medium">Total de Notas</h3>
+        <p class="text-2xl font-bold text-teal-400 mt-2">{{ analyticsService.totalReceipts() }}</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 text-center">
+        <h3 class="text-gray-400 text-sm font-medium">Média por Compra</h3>
+        <p class="text-2xl font-bold text-teal-400 mt-2">R$ {{ analyticsService.averagePerReceipt().toFixed(2) }}</p>
+      </div>
+    </section>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Monthly Spending Chart -->
+      @if (analyticsService.totalReceipts() > 0 && monthlySpendingChartData().length > 0) {
+        <section class="bg-gray-800 p-4 sm:p-6 rounded-lg border border-gray-700">
+          <h3 class="text-xl font-semibold text-white mb-4">Gastos por Mês (Últimos 6 meses)</h3>
+          <app-bar-chart [data]="monthlySpendingChartData()" />
+        </section>
+      }
+
+      <!-- Category Spending Chart -->
+      @if (analyticsService.totalReceipts() > 0 && categorySpendingChartData().length > 0) {
+        <section class="bg-gray-800 p-4 sm:p-6 rounded-lg border border-gray-700">
+          <h3 class="text-xl font-semibold text-white mb-4">Top 5 Categorias</h3>
+          <app-bar-chart [data]="categorySpendingChartData()" [horizontal]="true" />
+        </section>
+      }
+      
+      <!-- Payer Spending Chart -->
+      @if (analyticsService.totalReceipts() > 0 && payerSpendingChartData().length > 1) {
+        <section class="bg-gray-800 p-4 sm:p-6 rounded-lg border border-gray-700 lg:col-span-2">
+          <h3 class="text-xl font-semibold text-white mb-4">Gastos por Pagador</h3>
+          <app-bar-chart [data]="payerSpendingChartData()" [horizontal]="true" />
+        </section>
+      }
+    </div>
+
+    <section class="text-center lg:hidden">
+        @if(analyticsService.totalReceipts() > 0) {
+          <p class="text-lg text-gray-300">Continue escaneando para refinar suas análises!</p>
+        } @else {
+          <p class="text-lg text-gray-300">Vamos começar? Escaneie sua primeira nota fiscal.</p>
+        }
+        <button (click)="onScanNew()" class="mt-4 bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-8 rounded-full transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">
+          Escanear Nova Nota
+        </button>
+    </section>
+  }
+</div>

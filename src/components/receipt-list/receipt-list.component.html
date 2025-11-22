@@ -1,0 +1,110 @@
+@if (receipts().length > 0) {
+  <ul class="space-y-3 max-h-[65vh] overflow-y-auto">
+    @for (receipt of receipts(); track receipt.id) {
+      <li (click)="selectReceipt(receipt)" 
+          class="flex justify-between items-center bg-gray-700/50 p-4 rounded-lg transition-colors duration-200"
+          [class.cursor-pointer]="receipt.status === 'completed'"
+          [class.hover:bg-gray-700]="receipt.status === 'completed'"
+          [class.cursor-not-allowed]="receipt.status !== 'completed'">
+        
+        @switch (receipt.status) {
+          @case ('completed') {
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-white truncate">{{ receipt.storeName }}</p>
+              <p class="text-sm text-gray-400">{{ formatDate(receipt.date) }}</p>
+            </div>
+            <div class="flex items-center gap-4 ml-2">
+              <div class="text-right">
+                <p class="font-bold text-lg text-teal-300">R$ {{ receipt.totalAmount!.toFixed(2) }}</p>
+                <p class="text-xs text-gray-500">{{ receipt.items!.length }} itens</p>
+              </div>
+              @if(syncEnabled()) {
+                <div class="w-8 text-center">
+                   @if(receipt.syncing) {
+                     <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-teal-500" title="Sincronizando..."></div>
+                   } @else if(receipt.isSynced) {
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-400" title="Salvo na nuvem">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m15.362 15.362 1.058-1.057-1.058-1.058" class="text-green-300 stroke-2"/>
+                      </svg>
+                   } @else {
+                    <button (click)="onRetrySync($event, receipt.id)" class="text-gray-400 hover:text-teal-400 transition-colors" title="Sincronizar com Planilha">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                      </svg>
+                    </button>
+                   }
+                </div>
+              }
+              <button (click)="onDelete($event, receipt.id)" class="text-gray-500 hover:text-red-500 transition-colors" title="Deletar Nota">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.033-2.124H8.033c-1.12 0-2.033.944-2.033 2.124v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+              </button>
+            </div>
+          }
+          @case ('processing') {
+            <div class="flex items-center w-full">
+              <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-teal-500"></div>
+              <div class="ml-3 min-w-0">
+                <p class="font-semibold text-gray-300">{{ receipt.storeName || 'Processando...' }}</p>
+                @if(receipt.url) {
+                  <p class="text-sm text-gray-500 truncate">{{ receipt.url }}</p>
+                }
+              </div>
+            </div>
+             <button (click)="onDelete($event, receipt.id)" class="ml-4 flex-shrink-0 text-gray-500 hover:text-red-500 transition-colors" title="Deletar Nota">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.033-2.124H8.033c-1.12 0-2.033.944-2.033 2.124v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+              </button>
+          }
+          @case ('error') {
+            <div class="flex items-start w-full justify-between text-red-400">
+              <div class="flex items-start min-w-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mr-3 mt-1 flex-shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+                <div class="min-w-0">
+                  <p class="font-semibold">{{ receipt.storeName || 'Falha no processamento' }}</p>
+                  <p class="text-xs text-red-500 truncate" title="{{receipt.error}}">{{ receipt.error }}</p>
+
+                   @if(receipt.url) {
+                    <div class="mt-2">
+                      @if(editingUrlId() === receipt.id) {
+                        <!-- Edit mode -->
+                        <div class="flex items-center gap-1">
+                          <input #newUrlInput type="text" [value]="receipt.url" (click)="$event.stopPropagation()" class="w-full text-xs bg-gray-800 text-gray-300 border border-teal-500 rounded px-1 py-0.5">
+                          <button (click)="onUrlSave(receipt.id, newUrlInput.value)" class="text-xs bg-teal-600 text-white rounded px-2 py-0.5 hover:bg-teal-500">Salvar</button>
+                          <button (click)="toggleEditUrl($event, null)" class="text-xs bg-gray-600 text-white rounded px-2 py-0.5 hover:bg-gray-500">X</button>
+                        </div>
+                      } @else {
+                        <!-- View mode -->
+                        <div class="flex items-center gap-2">
+                          <p class="text-xs text-gray-500 truncate flex-1" title="{{receipt.url}}">{{ receipt.url }}</p>
+                          <button (click)="toggleEditUrl($event, receipt.id)" class="text-xs text-teal-400 hover:text-teal-300">Editar</button>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+              <div class="ml-4 flex-shrink-0 flex items-center gap-2">
+                <button (click)="onReprocess($event, receipt.id)" class="text-gray-400 hover:text-teal-400 transition-colors" title="Reprocessar">
+                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001a7.5 7.5 0 0 1-1.066 2.583l-3.926-2.582ZM16.023 9.348g4.992 0 4.992-.001a7.5 7.5 0 0 1-1.066 2.583L16.023 9.348Zm0 0-3.926 2.583a7.5 7.5 0 0 1-11.06 0L1 11.932a7.5 7.5 0 0 1 10.06-9.348c1.352-1.012 3.03-1.637 4.885-1.637a7.5 7.5 0 0 1 6.108 3.321L16.023 9.348Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M1.007 11.932 5 9.348m-3.993 2.584a7.5 7.5 0 0 1 0-5.166l3.993 2.582m0 0L1 11.932m3.993 2.583 3.926-2.582m-3.926 2.583 3.926-2.582a7.5 7.5 0 0 1 11.06 0l3.926 2.583m-3.926-2.582 3.926-2.582" />
+                  </svg>
+                </button>
+                <button (click)="onDelete($event, receipt.id)" class="text-gray-500 hover:text-red-500 transition-colors" title="Deletar Nota">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.033-2.124H8.033c-1.12 0-2.033.944-2.033 2.124v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </li>
+    }
+  </ul>
+} @else {
+  <div class="text-center py-16">
+      <h3 class="text-xl font-semibold text-white">Seu histórico está vazio.</h3>
+      <p class="text-gray-400 mt-2">Use o botão central para escanear uma nota fiscal e começar.</p>
+  </div>
+}

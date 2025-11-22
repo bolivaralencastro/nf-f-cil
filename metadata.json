@@ -1,0 +1,7 @@
+{
+  "name": "Fiscal Note Scanner PT-BR",
+  "description": "Scan Brazilian fiscal note QR codes to extract, organize, and analyze your spending. Compare prices and gain valuable financial insights from your receipts.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

@@ -1,0 +1,11 @@
+.receipt-frame {
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  width: 90%;
+  height: 90%;
+  pointer-events: none;
+  border: 2px dashed rgba(45, 212, 191, 0.7); /* teal-400 with opacity */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+}

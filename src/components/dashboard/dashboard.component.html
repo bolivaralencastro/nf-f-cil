@@ -1,0 +1,62 @@
+<div class="space-y-6 animate-fade-in">
+  <header>
+    <h1 class="text-3xl font-bold text-teal-400">Análise de Produtos</h1>
+    <p class="text-gray-400 mt-1">Pesquise um produto para ver a evolução dos preços ao longo do tempo.</p>
+  </header>
+
+  <!-- Product Price Comparison Section -->
+  <section class="bg-gray-800 p-4 sm:p-6 rounded-lg border border-gray-700">
+    <h3 class="text-xl font-semibold text-white mb-4">Acompanhe a "Bolsa de Valores" dos Produtos</h3>
+    
+    <div class="relative">
+      <input type="text" 
+             placeholder="Digite o nome de um produto..." 
+             [value]="searchTerm()"
+             (input)="onSearch($event)"
+             class="w-full bg-gray-700 text-white placeholder-gray-400 p-3 rounded-lg border border-gray-600 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+      
+      @if(searchTerm() && filteredProducts().length > 0) {
+        <div class="absolute z-10 w-full mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-lg">
+          @for(product of filteredProducts(); track product.name) {
+            <div (click)="selectProduct(product)" class="p-3 hover:bg-teal-800/50 cursor-pointer text-gray-200">
+              {{ product.name }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if(selectedProduct(); as product) {
+      <div class="mt-6 animate-fade-in">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h4 class="text-2xl font-bold text-teal-300">{{ product.name }}</h4>
+                <p class="text-gray-400">Histórico de Preços</p>
+            </div>
+            <button (click)="clearSelection()" class="text-gray-400 hover:text-white">&times; Limpar</button>
+        </div>
+        @if(productChartData().length > 1) {
+          <app-line-chart [data]="productChartData()" />
+        } @else {
+          <div class="h-64 flex items-center justify-center bg-gray-700/50 rounded-lg">
+            <p class="text-gray-500">Dados insuficientes para gerar um gráfico. É necessária mais de uma compra.</p>
+          </div>
+        }
+      </div>
+    } @else if (analyticsService.totalReceipts() === 0) {
+      <div class="text-center py-12">
+        <h3 class="text-xl font-semibold text-white">Comece a escanear!</h3>
+        <p class="text-gray-400 mt-2">Os dados de seus produtos aparecerão aqui para análise.</p>
+    </div>
+    } @else if (!searchTerm()) {
+       <div class="text-center py-12">
+        <p class="text-gray-500">Use a busca acima para encontrar um produto.</p>
+      </div>
+    } @else if (filteredProducts().length === 0) {
+        <div class="text-center py-12">
+         <p class="text-gray-500">Nenhum produto encontrado para "{{ searchTerm() }}".</p>
+        </div>
+    }
+
+  </section>
+</div>

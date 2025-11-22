@@ -1,0 +1,113 @@
+@if (receipt(); as r) {
+  <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 animate-fade-in">
+    <div class="flex justify-between items-start mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-teal-400">{{ r.storeName }}</h2>
+        <p class="text-sm text-gray-400">CNPJ: {{ r.storeCnpj }}</p>
+        <p class="text-sm text-gray-400">{{ r.storeAddress }}</p>
+        <p class="text-sm text-gray-400 mt-2">Data: {{ formatReceiptDate(r.date) }}</p>
+        <p class="text-sm text-gray-400 mt-1">Pagador: <span class="font-semibold text-gray-300">{{ r.payer || 'Não especificado' }}</span></p>
+        @if(r.url) {
+          <a [href]="r.url" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-sm text-teal-400 hover:text-teal-300 mt-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+            </svg>
+            Ver Nota Original
+          </a>
+        }
+      </div>
+       <div class="flex items-center gap-2">
+         @if (!isEditing()) {
+          <button (click)="toggleEdit(true)" class="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>
+            Editar
+          </button>
+        }
+        <button (click)="onReset()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-full transition duration-300 flex-shrink-0 ml-4 lg:hidden">
+          Voltar
+        </button>
+      </div>
+    </div>
+
+    @if (!isEditing()) {
+      <!-- MODO DE VISUALIZAÇÃO -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold border-b border-gray-600 pb-2 mb-3 text-gray-300">Itens Comprados</h3>
+        <div class="max-h-80 overflow-y-auto pr-2">
+          <ul class="space-y-3">
+            @for (item of r.items!; track item.name) {
+              <li class="flex justify-between items-center bg-gray-700/50 p-3 rounded-md">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                     <p class="font-medium text-white">{{ item.name }}</p>
+                     <span class="text-xs font-semibold bg-teal-800 text-teal-200 px-2 py-0.5 rounded-full">{{ item.category }}</span>
+                  </div>
+                  <p class="text-sm text-gray-400">
+                    {{ item.quantity }} {{ item.unit }} x R$ {{ item.unitPrice.toFixed(2) }}
+                  </p>
+                </div>
+                <p class="font-semibold text-lg text-teal-300">R$ {{ item.totalPrice.toFixed(2) }}</p>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t-2 border-teal-500 pt-4 mt-6 flex justify-end items-center">
+        <span class="text-xl font-bold text-gray-300 mr-4">Total:</span>
+        <span class="text-3xl font-bold text-teal-400">R$ {{ r.totalAmount!.toFixed(2) }}</span>
+      </div>
+
+    } @else {
+      <!-- MODO DE EDIÇÃO -->
+      @if(editableReceipt(); as editableR) {
+        <div class="space-y-6">
+          <!-- General Info Section -->
+          <div>
+            <h3 class="text-lg font-semibold text-gray-300 mb-2">Dados Gerais</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-700/50 p-4 rounded-md">
+              <div>
+                <label class="text-xs font-medium text-gray-400">Nome da Loja</label>
+                <input type="text" [(ngModel)]="editableR.storeName" class="w-full mt-1 bg-gray-600 text-white p-2 rounded-md border border-gray-500 focus:ring-teal-500 focus:border-teal-500">
+              </div>
+              <div>
+                <label class="text-xs font-medium text-gray-400">Pagador</label>
+                <input type="text" [(ngModel)]="editableR.payer" placeholder="Nome de quem pagou" class="w-full mt-1 bg-gray-600 text-white p-2 rounded-md border border-gray-500 focus:ring-teal-500 focus:border-teal-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Items Section -->
+          <div>
+            <h3 class="text-lg font-semibold text-gray-300 mb-2">Itens</h3>
+            <div class="max-h-64 overflow-y-auto pr-2">
+              <ul class="space-y-3">
+                @for (item of editableR.items!; track $index) {
+                  <li class="bg-gray-700/50 p-3 rounded-md space-y-2">
+                    <div>
+                      <label class="text-xs font-medium text-gray-400">Nome do Produto</label>
+                      <input type="text" [(ngModel)]="item.name" class="w-full mt-1 bg-gray-600 text-white p-2 rounded-md border border-gray-500 focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                    <div>
+                      <label class="text-xs font-medium text-gray-400">Categoria</label>
+                      <input type="text" [(ngModel)]="item.category" class="w-full mt-1 bg-gray-600 text-white p-2 rounded-md border border-gray-500 focus:ring-teal-500 focus:border-teal-500">
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end items-center gap-4 mt-6 border-t border-gray-600 pt-4">
+          <button (click)="toggleEdit(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">
+            Cancelar
+          </button>
+          <button (click)="saveChanges()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">
+            Salvar Alterações
+          </button>
+        </div>
+      }
+    }
+  </div>
+}
